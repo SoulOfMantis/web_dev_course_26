@@ -24,9 +24,7 @@ end
 
 class Car < Vehicle
   def initialize
-    # TODO: Call super with appropriate values
-    # Car: 4 wheels, 5 passengers
-    nil
+    super(:Car, 4,5)
   end
 end
 
@@ -53,7 +51,12 @@ class VehicleFactory
   # Return nil for unknown types
   
   def self.create_vehicle(type)
-    nil
+    case type
+    when :car
+      return Car.new
+    else nil
+    end
+
   end
 end
 
