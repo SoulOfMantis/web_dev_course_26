@@ -42,8 +42,8 @@ def build_command_pairs(filename)
   (0..commands.count-1).each do |x|
     (x+1..commands.count-1).each do |y|
       command_pair = {}
-      command_pair['first_command'] = commands[x]
-      command_pair['second_command'] = commands[y]
+      command_pair[:first_command] = commands[x]
+      command_pair[:second_command] = commands[y]
       res.append command_pair
     end
   end
@@ -56,14 +56,14 @@ def build_game_pairs(filename)
   command_pairs = build_command_pairs filename
   command_pairs.each do |x|
     game_info = {}
-    game_info['first_command'] = x['first_command']['name']
-    game_info['second_command'] = x['second_command']['name']
-    game_info['game_town'] = x['first_command']['hometown']
+    game_info[:first_command] = x[:first_command][:name]
+    game_info[:second_command] = x[:second_command][:name]
+    game_info[:game_town] = x[:first_command][:hometown]
     res.append game_info
     game2_info = {}
-    game2_info['first_command'] = x['second_command']['name']
-    game2_info['second_command'] = x['first_command']['name']
-    game2_info['game_town'] = x['second_command']['hometown']
+    game2_info[:first_command] = x[:second_command][:name]
+    game2_info[:second_command] = x[:first_command][:name]
+    game2_info[:game_town] = x[:second_command][:hometown]
     res.append game2_info
   end
   res
@@ -75,8 +75,8 @@ def get_command_info(filename)
   file.each_line do |line|
     match = (/\. (?<command>[ёа-яА-Я \-]+) — (?<hometown>[ёа-яА-Я \-]+)$/.match(line))
     command_info = {}
-    command_info['name'] = match[:command]
-    command_info['hometown'] = match[:hometown]
+    command_info[:name] = match[:command]
+    command_info[:hometown] = match[:hometown]
     res.append command_info
   end
   res
@@ -94,15 +94,26 @@ end
 def build_calendar(start_date, end_date, filename)
   game_times = get_game_times(start_date, end_date)
   game_pairs = build_game_pairs(filename)
-  return "Не хватит времени" if game_times.count < game_pairs.count
+  return "Не хватит времени" if 2*game_times.count < game_pairs.count
   res = []
-  (0..game_pairs.count-1).each do |i|
-    game = {}
-    game['first_command'] = game_pairs[i]['first_command']
-    game['second_command'] = game_pairs[i]['second_command']
-    game['game_town'] = game_pairs[i]['game_town']
-    game['date_time'] = game_times[i]
-    res.append game
+  (0..game_pairs.count/2).each do |i|
+    games = {}
+    first_game = {}
+    first_game[:first_command] = game_pairs[i][:first_command]
+    first_game[:second_command] = game_pairs[i][:second_command]
+    first_game[:game_town] = game_pairs[i][:game_town]
+    first_game[:date_time] = game_times[i]
+    games[:first_game] = first_game
+
+    second_game = {}
+    second_game[:first_command] = game_pairs[-1-i][:first_command]
+    second_game[:second_command] = game_pairs[-1-i][:second_command]
+    second_game[:game_town] = game_pairs[-1-i][:game_town]
+    second_game[:date_time] = game_times[-i-1]
+    games[:second_game] = second_game
+
+    res.append games
+
   end
   res
 end
@@ -111,4 +122,4 @@ def print_result(start_date, end_date, commands_filename)
   puts build_calendar start_date, end_date, commands_filename
 end
 
-print_result('24.02.2026', '27.10.2027', 'teams.txt')
+print_result('24.02.2026', '27.10.2027', '5teams.txt')
