@@ -38,6 +38,7 @@ end
 
 def get_game_times(possible_game_times, game_count, l = 0, r = possible_game_times.size-1)
   throw "" if 2*possible_game_times.count < game_count
+  throw "" if game_count <= 0
   if possible_game_times.count < game_count
     return get_game_times(possible_game_times, game_count-possible_game_times.count)
   end
@@ -59,15 +60,12 @@ def build_command_pairs(filename)
       res.append command_pair
     end
   end
-  res.sort
+  res
 end
 
 def build_game_pairs(filename)
   res = []
   command_pairs = build_command_pairs filename
-  # (0..command_pairs.count-1).each do |i|
-  #
-  # end
   command_pairs.each do |x|
     game_info = {}
     game_info[:first_command] = x[:first_command][:name]
@@ -80,14 +78,25 @@ def build_game_pairs(filename)
     game2_info[:game_town] = x[:second_command][:hometown]
     res.append game2_info
   end
-  res.sort_by {|x| x[:game_town]}
+  res
+end
+
+def swap(a, b)
+  temp = a
+  a = b
+  b = temp
 end
 
 def reorder_command_pairs(filename)
   res = []
   game_pairs = build_command_pairs(filename)
-  (0..game_pairs.count/2).each do |i|
-    res.append game_pairs[i]
+  i = 0
+  j = 1
+  while i < game_pairs.size-1 do
+    j += 1 while (check_command_overlap game_pairs[i], game_pairs[j]) && (j < game_pairs.size-1)
+    swap game_pairs[i], game_pairs[j]
+    i += 1
+    j = i + 1
   end
   res
 end
@@ -112,23 +121,21 @@ end
 def build_calendar(start_date, end_date, filename)
   game_pairs = build_game_pairs(filename)
   possible_times = get_possible_game_times(start_date, end_date)
-  game_count = game_pairs.count
-  game_times = get_game_times(possible_times, game_count)
-  return "Не хватит времени!" if game_times.is_a? String
-  # game_times = possible_times
-  # return "Не хватит времени" if 2*game_times.size < game_pairs.count
+  # game_count = game_pairs.count
+  # game_times = get_game_times(possible_times, game_count)
+  game_times = possible_times
+  throw "Не хватит времени" if 2*game_times.size < game_pairs.count
   res = []
   t = 0
-  fl = false
   until game_pairs.empty? do
-    puts t
     (0..game_pairs.count-1).each do |i|
-      if res.find(proc{false}) {|x| x[:game_time].day == game_times[t].day && check_command_overlap(x, game_pairs[i])}
-        puts "Skipped #{game_pairs[i]} because team is tired"
+      # if res.find(proc{false}) {|x| x[:game_time].day == game_times[t].day && check_command_overlap(x, game_pairs[i])}
+      if res.find(proc{false}) {|x| x[:game_time] == game_times[t] && check_command_overlap(x, game_pairs[i])}
+        # puts "Skipped #{game_pairs[i]} because team is tired"
         next
       end
       if res.count{|x| x[:game_town] == game_pairs[i][:game_town] && x[:game_time] == game_times[i]} > 0
-        puts "Skipped #{game_pairs[i]} because only one stadium"
+        # puts "Skipped #{game_pairs[i]} because only one stadium"
         next
       end
       game = {}
@@ -138,33 +145,31 @@ def build_calendar(start_date, end_date, filename)
       game[:game_time] = game_times[t]
       res.append game
       t += 1
-      # puts game
     end
-    game_times.delete_if {|x|}
     skipped = game_pairs.delete_if { |x| res.find {|y| x[:first_command] == y[:first_command] && x[:second_command] == y[:second_command]}}
-    puts "#{skipped.count}/#{skipped.count+res.count}"
-    if skipped == game_pairs
-      return res if fl
-      t = (t + 1) % game_times.size
-      fl = true
-    else
-      fl = false
-      end
+    t += 1 if skipped == game_pairs
+    t = t % game_times.size
     game_pairs = skipped
   end
 
   res.sort_by{|x| x[:game_time]}
 end
 
-def print_result(start_date, end_date, commands_filename)
+def print_calendar_to_file(start_date, end_date, commands_filename, result_filename)
   calendar = build_calendar(start_date, end_date, commands_filename)
-  if calendar.is_a? String
-    puts calendar
-    return
-  end
-  calendar.each do |x|
-    puts "#{x[:game_time].strftime "%d %B %Y, %H:%M"}, в городе #{x[:game_town]}, #{x[:first_command]} : #{x[:second_command]}"
+  File.open(result_filename, 'w') do |f|
+    calendar.each do |x|
+      f.puts "#{x[:game_time].strftime "%B %d %Y, %H:%M"}, в городе #{x[:game_town]}, #{x[:first_command]} : #{x[:second_command]}"
+    end
   end
 end
 
-print_result('01.08.2026', '01.9.2026', '5teams.txt')
+
+def print_result(start_date, end_date, commands_filename)
+  calendar = build_calendar(start_date, end_date, commands_filename)
+  calendar.each do |x|
+    puts "#{x[:game_time].strftime "%B %d %Y, %H:%M"}, в городе #{x[:game_town]}, #{x[:first_command]} : #{x[:second_command]}"
+  end
+end
+
+print_calendar_to_file('01.08.2026', '1.06.2027', 'teams.txt', 'calendar.txt')
