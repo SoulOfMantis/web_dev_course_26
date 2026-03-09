@@ -1,0 +1,42 @@
+{
+  "n": 2,
+  "k": 3,
+  "m": 2,
+  "visitors": [
+    {
+      "full_name": "Иванов Иван Иванович",
+      "birth_date": "2002-04-15",
+      "residence": "Москва",
+      "arrival_time": "2025-03-10T12:00:00",
+      "avg_training_in_minutes": 60
+    },
+    {
+      "full_name": "Петров Петр Сергеевич",
+      "birth_date": "2001-11-03",
+      "residence": "Санкт-Петербург",
+      "arrival_time": "2025-03-10T12:04:00",
+      "avg_training_in_minutes": 45
+    },
+    {
+      "full_name": "Сидорова Анна Викторовна",
+      "birth_date": "2003-07-21",
+      "residence": "Казань",
+      "arrival_time": "2025-03-10T12:10:00",
+      "avg_training_in_minutes": 30
+    },
+    {
+      "full_name": "Кузнецов Алексей Дмитриевич",
+      "birth_date": "2000-01-30",
+      "residence": "Новосибирск",
+      "arrival_time": "2025-03-10T12:03:00",
+      "avg_training_in_minutes": 90
+    },
+    {
+      "full_name": "Смирнова Мария Олеговна",
+      "birth_date": "2002-09-12",
+      "residence": "Екатеринбург",
+      "arrival_time": "2025-03-10T12:06:00",
+      "avg_training_in_minutes": 50
+    }
+  ]
+}
